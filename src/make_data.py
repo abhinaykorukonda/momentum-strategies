@@ -7,6 +7,7 @@ from os.path import join, dirname
 
 CUTOFF_DATE = '2013-10-31'
 
+
 def main():
     """ Runs data processing scripts to turn raw data from (../raw) into
         cleaned data ready to be analyzed (saved in ../processed).
@@ -67,16 +68,19 @@ def main():
 
     # Dump daily returns
     print("Dumping daily returns file as daily_returns.csv")
-    daily_returns.loc[daily_returns.index >= CUTOFF_DATE,:].to_csv('data/processed/daily_returns.csv')
+    daily_returns.loc[daily_returns.index >= CUTOFF_DATE,
+                      :].to_csv('data/processed/daily_returns.csv')
 
     print("Dumping covariance matrices as monthly_covariances.csv")
     cov_df.to_csv('data/processed/monthly_covariances.csv')
 
     print("Dumping month end returns as monthly_covariances.csv")
-    monthend_returns.loc[monthend_returns.index >= CUTOFF_DATE,:].to_csv('data/processed/monthly_returns.csv')
+    monthend_returns.loc[monthend_returns.index >= CUTOFF_DATE, :].to_csv(
+        'data/processed/monthly_returns.csv')
 
     print("Dumping monthly volatilities as monthly_vol.csv")
-    monthly_vol.loc[monthly_vol.index >= CUTOFF_DATE,:].to_csv('data/processed/monthly_vol.csv')
+    monthly_vol.loc[monthly_vol.index >= CUTOFF_DATE,
+                    :].to_csv('data/processed/monthly_vol.csv')
 
     # Make momentum signal based T-12 to T-2 month while leaving out last month
 
@@ -84,7 +88,8 @@ def main():
         11).mean().dropna(axis=0, how='all') * 12
 
     print("Dumping stock signals as signal.csv")
-    signal.loc[signal.index >= CUTOFF_DATE,:].to_csv('data/processed/signal.csv')
+    signal.loc[signal.index >= CUTOFF_DATE, :].to_csv(
+        'data/processed/signal.csv')
 
     # Make benchmarks
     # First benchmark (market cap weighted return)
@@ -103,8 +108,10 @@ def main():
 
     print("Dumping market-cap benchmark monthly returns and volatilities \
         as mcap_benchmark_returns.csv and mcap_benchmark_vol.csv")
-    mcap_benchmark_returns.loc[mcap_benchmark_returns.index >= CUTOFF_DATE].to_csv('data/processed/mcap_benchmark_returns.csv')
-    mcap_benchmark_vol.loc[mcap_benchmark_vol.index >= CUTOFF_DATE].to_csv('data/processed/mcap_benchmark_vol.csv')
+    mcap_benchmark_returns.loc[mcap_benchmark_returns.index >= CUTOFF_DATE].to_csv(
+        'data/processed/mcap_benchmark_returns.csv')
+    mcap_benchmark_vol.loc[mcap_benchmark_vol.index >= CUTOFF_DATE].to_csv(
+        'data/processed/mcap_benchmark_vol.csv')
 
     # Equal weighted benchmark
     eqwt_benchmark_returns = monthend_returns.mean(axis=1)
@@ -113,9 +120,10 @@ def main():
 
     print("Dumping equal weighted benchmark monthly returns and volatilities \
          as eqwt_benchmark_returns.csv and eqwt_benchmark_vol.csv")
-    eqwt_benchmark_returns.loc[eqwt_benchmark_returns.index >= CUTOFF_DATE].to_csv('data/processed/eqwt_benchmark_returns.csv')
-    eqwt_benchmark_vol.loc[eqwt_benchmark_vol.index >= CUTOFF_DATE].to_csv('data/processed/eqwt_benchmark_vol.csv')
-
+    eqwt_benchmark_returns.loc[eqwt_benchmark_returns.index >= CUTOFF_DATE].to_csv(
+        'data/processed/eqwt_benchmark_returns.csv')
+    eqwt_benchmark_vol.loc[eqwt_benchmark_vol.index >= CUTOFF_DATE].to_csv(
+        'data/processed/eqwt_benchmark_vol.csv')
 
     # Equal sector weighted benchmark
     # Get all sector groupings
@@ -125,23 +133,27 @@ def main():
     print("Dumping sector groupings as sectors.csv")
     sectors.to_csv('data/processed/sectors.csv')
 
-    sector_counts = pd.DataFrame(raw_df.groupby(['Date','Sector'])['Symbol'].count())
+    sector_counts = pd.DataFrame(raw_df.groupby(
+        ['Date', 'Sector'])['Symbol'].count())
 
-    sector_counts.rename(columns = {'Symbol' : 'Count'}, inplace = True)
+    sector_counts.rename(columns={'Symbol': 'Count'}, inplace=True)
 
     # Third benchmark
-    stock_weights =  (1 / (raw_df.merge(sector_counts,
-     on = ['Date', 'Sector'],
-      how = 'left').pivot('Date','Symbol','Count')) / 11).resample('M').last()
+    stock_weights = (1 / (raw_df.merge(sector_counts,
+                                       on=['Date', 'Sector'],
+                                       how='left').pivot('Date', 'Symbol', 'Count')) / 11).resample('M').last()
 
-    sector_eq_benchmark_returns = (stock_weights * monthend_returns).sum(axis = 1)
+    sector_eq_benchmark_returns = (
+        stock_weights * monthend_returns).sum(axis=1)
     sector_eq_benchmark_vol = (sector_eq_benchmark_returns.rolling(
         36).std() * np.sqrt(12)) * np.sqrt(12)
 
     print("Dumping sector equal weighted benchmark monthly returns and volatilities \
          as sector_eqwt_benchmark_returns.csv and sector_eqwt_benchmark_vol.csv")
-    sector_eq_benchmark_returns.loc[sector_eq_benchmark_returns.index >= CUTOFF_DATE].to_csv('data/processed/sector_eqwt_benchmark_returns.csv')
-    sector_eq_benchmark_vol.loc[sector_eq_benchmark_vol.index >= CUTOFF_DATE].to_csv('data/processed/sector_eqwt_benchmark_vol.csv')
+    sector_eq_benchmark_returns.loc[sector_eq_benchmark_returns.index >= CUTOFF_DATE].to_csv(
+        'data/processed/sector_eqwt_benchmark_returns.csv')
+    sector_eq_benchmark_vol.loc[sector_eq_benchmark_vol.index >= CUTOFF_DATE].to_csv(
+        'data/processed/sector_eqwt_benchmark_vol.csv')
 
 
 if __name__ == '__main__':
