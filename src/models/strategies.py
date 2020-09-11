@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import math
+from scipy.optimize import minimize
 
 class BaseStrategy:
 
@@ -165,7 +166,10 @@ class QuantileStrategy(BaseStrategy):
     def compute_weights(self):
 
         if self._short_constraint:
-            self._weights = self._compute_long_only_weights()
+            if self._sector_neutral:
+                self._weights = self._compute_long_only_weights_sector_neutral()
+            else:
+                self._weights = self._compute_long_only_weights()
         else:
             self._weights = self._compute_long_short_weights()
 
@@ -180,10 +184,14 @@ class QuantileStrategy(BaseStrategy):
 
         positions = self._signal_df.apply(lambda x: x >= np.quantile(x.dropna(), 0.8),
             axis=1) * 1
-        weights = positions.divide(positions.sum(axis = 1), axis = 0)
+        weights = positions.divide(positions.sum(axis = 1), axis = 0) 
+
+        return weights
 
     
     def _compute_long_only_weights_sector_neutral(self):
+
+        num_sectors = len(self._sector_groupings)
         
         sector_df_list = [self._signal_df.loc[:,self._signal_df.columns.isin(group)] for group in self._sector_groupings]
 
@@ -192,18 +200,80 @@ class QuantileStrategy(BaseStrategy):
         sector_weights = []
         for strat in sector_strats:
             strat.compute_weights()
-            sector_weights.append(strat.get_weights())
-        return sector_weights
+            sector_weights.append(strat.get_weights()/ num_sectors)
+        
+        weights = pd.concat(sector_weights, axis = 1)
+
+        weights = weights.loc[:,self._signal_df.columns]
+
+        return weights
 
 
-
-
-    
         
 
 
 
+class OptimizationStrategy(BaseStrategy):
+
+    def __init__(self,stock_signals, covariances, vol_tolerance, short_constraint):
+        
+        super().__init__(stock_signals)
+        self._covariances = covariances
+        self._vol_tol = vol_tolerance
+        self._short_constraint = short_constraint
+
+        self._variance_tol = self._vol_tol ** 2
+
+    def compute_weights(self):
+
+        monthend_dates = self._signal_df.index.values
+
+        weights = {}
+
+        for month_num, sample_date in enumerate(monthend_dates):
+            print("Optimizing {} of {}".format(month_num + 1,len(monthend_dates)))
+
+            covariance = self._covariances.xs(sample_date, level=0)
+            alpha = self._signal_df.loc[self._signal_df.index == sample_date, :].T.iloc[:, 0]
+            alpha_copy = alpha.copy()
+            alpha_copy = alpha.loc[~alpha.isnull()]
+            covariance = covariance.loc[alpha_copy.index, alpha_copy.index]
+
+            def portfolio_std(w, covariance):
+                variance = (w.T @ covariance @ w) - self._variance_tol
+
+                return variance
 
 
+            def weight_sum(w):
+                return np.sum(w) - 1
 
-    
+
+            def portfolio_alpha(w, alpha_copy):
+
+                return np.sum(w * alpha_copy) * -1
+
+
+            w0 = np.ones(alpha_copy.shape) / alpha_copy.shape
+
+            constraints = [{'type': 'eq', 'fun': lambda x: portfolio_std(x, covariance)},
+                        {'type': 'eq', 'fun': weight_sum}]
+
+
+            bounds = [(0, 1)]*(w0.shape[0])
+
+            ans = minimize(portfolio_alpha, w0, constraints=constraints,
+                        args=(alpha_copy,), bounds=bounds)
+            
+            weights[sample_date] = dict(zip(alpha_copy.index,ans.x))
+
+        computed_weights = pd.DataFrame.from_dict(weights).T.fillna(0)
+
+        missing_tickers = list(self._signal_df.columns[~self._signal_df.columns.isin(computed_weights.columns)])
+        for ticker in missing_tickers:
+            computed_weights[ticker] = 0
+        self._weights = computed_weights.loc[:,self._signal_df.columns]
+
+
+        return self._weights
+
