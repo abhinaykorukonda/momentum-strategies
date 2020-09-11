@@ -1,0 +1,96 @@
+# Assignment Report
+
+This report discusses the findings of different strategies using momentum signal. The daily stock prices of nearly 110 stocks for the past 10 years is given for our exercise. The report discusses the following strategies
+
+- Single stock strategy
+    - Without Volatlity constraint
+    - With Volatility constraint
+
+- Quantile stock strategy
+
+- Optimization strategy
+
+- Quantile stock strategy (sector-neutrality)
+
+
+## Choice of momentum signal
+----------------------------
+
+While there are many ways to measure momentum, based on Jegadeesh 1990 and Fama-French website, the general momentum signal used is [2-12 momentum](http://mba.tuck.dartmouth.edu/pages/faculty/ken.french/Data_Library/det_mom_factor.html), (last 12-month returns, excluding the previous month) when examining intermediate-term momentum (last 12-month returns) effect on stock prices. The last month is excluded to avoid effects from [short-term return reversals](https://alphaarchitect.com/2015/01/14/quantitative-momentum-research-short-term-return-reversal/)
+
+## Choice of benchmarks
+-----------------------
+
+### No sector neutrality
+For the strategies without sector neutrality, the best benchmark to be used is an equal weighted index. Many institutions use market-cap weighted benchmarks such as S\&P 500 to measure their portfolio.
+
+Why not use market-cap weighted benchmark in that case? Market-cap weighted benchmarks experience effects due to the SMB factor also known as the [size factor](https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html). Market-cap weighted benchmarks give more weight to bigger market-cap stocks. Historically, the momentum factor experienced [negative correlations](https://www.factorresearch.com/research-factor-correlation-check) of nearly -13\% to the size factor. So when we compare our momentum strategy to a market-cap weighted benchmark, noises due to size factor might exist. Equal weighted benchmark will avoid this problem. The equal weighted benchmark definitely fails when there are stocks with very low volume influencing the entire universe of stocks. Since our universe only contains 110 stocks, using an equal weighted benchmark will not be a problem.
+
+
+### Sector neutrality
+In case of sector neutrality, the best benchmark to be used is a variation of equal weighted benchmark. Since each sector will have equal weight, we should ensure that the benchmark also has equal weights in the sectors. To achieve this, we will assign a weight of 1/11 (there are total of 11 sectors) to each sector, and among each sector we will weigh the stocks equally
+
+This ensures that we have an apples to apples comparison when strategies with sector neutrality are considered
+
+## Backtest Assumptions
+The following are the backtest assumptions used for some or all of the strategies
+
+- Every strategy will be rebalanced monthly to avoid excessive trading
+- Risk free rate is assumed to be 0
+- All portfolios will be fully-invested with no investment in risk-free asset
+- No transaction costs are assumed
+- Covariances, variances, and volatilities are calculated using past 3-year daily returns history
+- Geometric returns are used to compute stock returns instead of log returns (Even though, the log returns are popular in academics, the practical applications are not applicable)
+- Risk tolerance of a strategy is defined by target annualized volatlity
+- Backtest starts from 2013-10-31
+- Results are posted considering all the months after 2013-10-31
+
+
+The following assumptions/considerations are NOT followed
+- There is no testing set defined, even though the right way to test our results is to choose the best strategy and test it on unseen test data set at the end, we chose to use the entire dataset for exploring our results. The right way to do it is definitely to have a unseen test set to report results based on the best strategy in cross-validation set.  
+
+
+## Strategy choices
+--------------------
+
+### Single stock strategy
+
+Based on the problem statement, the two contraints are 
+
+1) You can only be invested in one asset at any point in time or none
+2) There is no shorting allowed
+
+Based on these constraints, there are two strategies that can be built
+
+- Every month, pick one single stock with the highest momentum signal and trade it for that month
+- Every month, pick one single stock with the highest momentum signal with a constraint on the volatility of less than or equal to some threshold value and trade it for that month
+
+
+Usually, momentum is highly correlated to volatility as higher-volatlity stocks tend to have higher returns (risk-reward tradeoff). As we are only picking one stock, there is very little diversification benefit, the best way to control idiosyncratic and beta risks is to select a stock only if its volatility is below a certain threshold. The threshold here is considered to be 25\% as it's the median annualized volatility of all stocks
+
+### Quantile strategy
+
+When the first constraint is removed, the only constraint is on the shorting
+
+Most factor strategies are dollar-neutral. The universe of stocks are sorted based on the signal value and broken into n-quantiles. An equal weighted portfolio of the top quantile is bought and another equal weighted portfolio of bottom quantile is shorted. The long-short strategy ensures that the market beta effect is reduced as much as possible. 
+
+Since our constraint cannot allow us to do that, we can simply trade the equal weighted portfolio of stocks in the top quantile every month
+
+For this exercise, we chose to break the universe into 5 quantiles every month based on the momentum signal value
+
+
+### Optimization strategy
+
+Another way to target this problem when the first constraint is removed is to use portfolio optimization
+
+Instead of choosing the equal weighted top quantile, one can find a dynamic portfolio weights that will maximize the value of the ex-ante alpha with constraints on ex-ante portfolio volatility and long-only trading
+
+Based on pg 383 of Kahn 2000, the following equation shows us how to set up the problem 
+
+
+
+This is a simple quadratic optimization problem with linear constraints. Every month, this optimization will be done based on the new signal values (or ex-ante alphas) 
+
+
+
+
