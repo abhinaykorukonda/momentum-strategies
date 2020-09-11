@@ -12,7 +12,7 @@ def main():
         cleaned data ready to be analyzed (saved in ../processed).
     """
 
-    input_file_path = join(dirname(__file__), '..', '..',
+    input_file_path = join(dirname(__file__), '..',
                            'data', 'raw', 'qr_lead_hw_data_candidate.csv.gz')
 
     # Load the raw dataset
