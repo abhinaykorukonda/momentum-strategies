@@ -1,5 +1,13 @@
 # Assignment Report
 
+This report discusses the findings of different strategies using momentum signal and the technical implementation using the raw data of nearly 10 years history of prices for 110 stocks.
+
+- Single stock strategy
+- Single stock strategy (risk-tol)
+- Top quantile  strategy
+- Optimization strategy
+- Top quantile strategy (sector-neutrality)
+
 
 ## Table of Contents
 1. [Choice of momentum signal](#choice-of-momentum-signal)
@@ -15,19 +23,17 @@
     1. [Make Data](#make-data)
     2. [Make Models](#make-models)
     3. [Make Report](#make-report)
-6. [Strategy Results](#strategy-results-and-discussion)
+6. [Strategy Results](#strategy-results)
     1.[Metrics for Tearsheet](#metrics-for-tearsheet)
     2.[Tearsheet](#tear-sheet)
-7. [Discussion]
-    
-8. [Appendix]
-This report discusses the findings of different strategies using momentum signal and the technical implementation using the raw data of nearly 10 years history of stock prices for 110 stocks.
-
-- Single stock strategy
-- Singel stock strategy (risk-tol)
-- Top quantile  strategy
-- Optimization strategy
-- Top quantile strategy (sector-neutrality)
+7. [Discussion](#discussion)
+    1. [Both constraints present](#both-constraints-present-1)
+    2. [Single stock constraint removed](#single-stock-constraint-removed-1)
+    3. [Sector Neutrality constraint](#sector-neutrality-constraint-1)
+    4. [Final Recommendation](#final-recommendation)
+8. [Appendix](#appendix)
+    1. [Correlations](#correlations)
+    2. [Figures](#figures)
 
 
 ## **Choice of momentum signal**
@@ -39,9 +45,9 @@ While there are many ways to measure momentum, based on Jegadeesh 1990 and Fama-
 
 
 ### **No sector neutrality**
-For the strategies without sector neutrality, the best benchmark to be used is an equal weighted index. Many institutions use market-cap weighted benchmarks such as S\&P 500 to measure their portfolio.
+For the strategies without sector neutrality, the best benchmark to be used is an equal weighted index. Many institutions use market-cap weighted benchmarks such as S&P 500 to measure their portfolio.
 
-Why not use market-cap weighted benchmark in that case? Market-cap weighted benchmarks experience effects due to the SMB factor also known as the [size factor](https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html). Market-cap weighted benchmarks give more weight to bigger market-cap stocks. Historically, the momentum factor experienced [negative correlations](https://www.factorresearch.com/research-factor-correlation-check) of nearly -13\% to the size factor. So when we compare our momentum strategy to a market-cap weighted benchmark, noises due to size factor might exist. Equal weighted benchmark will avoid this problem. The equal weighted benchmark definitely fails when there are stocks with very low volume influencing the entire universe of stocks. Since our universe only contains 110 stocks, using an equal weighted benchmark will not be a problem.
+Why not use market-cap weighted benchmark in that case? Market-cap weighted benchmarks experience effects due to the SMB factor also known as the [size factor](https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html). Market-cap weighted benchmarks give more weight to bigger market-cap stocks. Historically, the momentum factor experienced [negative correlations](https://www.factorresearch.com/research-factor-correlation-check) of nearly -13% to the size factor. So when we compare our momentum strategy to a market-cap weighted benchmark, noises due to size factor might exist. Equal weighted benchmark will avoid this problem. The equal weighted benchmark definitely fails when there are stocks with very low volume influencing the entire universe of stocks. Since our universe only contains 110 stocks, using an equal weighted benchmark will not be a problem.
 
 
 ### **Sector neutrality**
@@ -102,7 +108,6 @@ Even though an appropriate benchmark would be market weighted benchmark (see [ef
 ### **Sector Neutrality Constraint**
 
 
-
 With the first constraint removed and a new constraint on sector-neutrality (equal weights) added, we can simply modify the Quantile Strategy to conform with the new constraint
 
 Instead of sorting the stocks globally based on the signal, we can sort the stocks locally in the sector and pick the portfolio of top nth quantile in each sector. So, the quantile strategy can be implemented for every sector individually and then combined into global portfolio strategy.
@@ -111,7 +116,7 @@ By doing a quantile strategy in every sector, we will end up with 11 long-only p
 
 Other ways of acheiving sector neutrality is to subtract each stock's signal value with its respective average sector signal value. While this ensures that our signal is neutral to sectors, it doesn't ensure equal weightings of sectors in the portfolio.
 
-The optimization strategy can also be enhanced by adding additional constraints in the problem. But we will not be discussing those methods in this report
+The optimization strategy can also be enhanced by adding additional constraints related to sector-neutrality in the problem. But we will not be discussing those methods in this report
 
 ## Technical Implementation
 
@@ -141,7 +146,7 @@ py src/make_dataset.py
 ```
 
 
-The python script [make_dataset.py](../src/data/make_dataset.py) converts the raw data into the following important csv files
+The python script `src/make_dataset.py` converts the raw data into the following important csv files
 
 
 - `data/processed/monthly_returns.csv` - This file stores monthly returns of each stock with the columns as stock tickers, rows as monthly dates and values as the monthly returns corresponding to the row and column. The monthly returns are calculated using adjusted close prices for accurate represntation of returns adjusted for dividends, stock splits etc.
@@ -233,6 +238,8 @@ After running the 5 different strategies, the metrics considered for tearsheets 
 
 ### Tear Sheet
 
+Please see next page for the rest of the tear-sheet results
+
 | Metric       | Single stock | Single Stock(risk-tol) | Top Quantile | Optimization | Eq.wt benchmark | Top Quantile(sector-neutral) | Sector eq.wt benchmark |
 |--------------|:------------:|:----------------------:|:------------:|:------------:|:---------------:|:----------------------------:|:----------------------:|
 | Mean         |    57.87%    |         22.90%         |    20.23%    |    21.12%    |     14.44%      |            18.6%             |         14.44%         |
@@ -266,18 +273,18 @@ The only plus points of this strategy is its chance of getting high returns simi
 
 When the single stock constraint is removed, **Top Quantile** and **Optimization** strategies are applicable. We observe that the **Top-Quantile** has a better profile of returns when compared to the *Single stock** strategy with reasonable returns and volatility. It has the lowest drawdown and turnover as well due to its diversification benefits of trading more than 1 stock. Even though the mean is significant at 99% level, the alpha is actually a negative value indicating there was no alpha generated in the backtest for this strategy. The beta of the portfolio is much higher indicating that the idiosyncratic risk of this strategy is much lower compared to Single stock strategies
 
-This strategy might not be that useful if there is a long-only constraint. If there is a short constraint, there is probably a chance that alpha might be with the short portfolio of stocks cancelling out the negative effects.
+This strategy might not be that useful if there is a long-only constraint. If there is a short constraint, there is probably a chance that alpha might become positive with the short portfolio of stocks cancelling out the negative effects.
 
 On ther other hand **Optimization** strategy does better in all fronts compared to the single stock strategies and top quantile strategy, it has nearly 21% annualized mean return with 17% volatility as the ex-ante target volatility was set at 15%. Even though the information ratio or the alpha is not that significant even at 90% confidence, it is better when compared when compared to the previous strategies with the exception of **Single stock(risk-tol)**
 
 This strategy should be chosen in case of long-only constraints as it not only provides diversification benefits but only optimizes the alpha by dynamically setting the weights of the stock. The drawbacks of this strategy due to its technical implementation, one can run into low-rank covariance matrix or even suffer problems from data-mining. These problems can be avoided by using shrinkage methods or PCA and setting up proper train, validation and test experiments
 
 ### Sector Neutrality constraint
-When the sector neutrality consraint is introduced, we can apply the top quantile strategy in each sector separately and combine an equal weighted sector portfolio. We find the **Top quantile(sector-neutrality)** has similar results when compared to **Top quantile** strategy. One can also see in the appendix that it has high correlations to the former strategy as well. This is due to matching high alpha unique stocks in the both of the portfolios. This strategy also has a negative alpha similar to the former strategy
+When the sector neutrality consraint is introduced, we can apply the top quantile strategy in each sector separately and combine an equal weighted sector portfolio. We find the **Top quantile(sector-neutrality)** has similar results when compared to **Top quantile** strategy. One can also see in the appendix that it has high correlations to the former strategy as well. This is due to matching high alpha unique stocks present in the both of the portfolios. This strategy also has a negative alpha similar to the former strategy
 
 One can improve upon this strategy by using optimization strategy using additional constraints on the sector weights.
 
-Even though sector-neutral strategy might not outperform one with no constraints on sectors, this strategy will be very helpful to avoid effects due to industry bubble bursts. For example, prior to the year 2001, the Tech stocks had very high momentum up until the 2001 Dot Com bubble burst, With no constraints on the sectors, the unconstrained strategy might have been overweight in the tech sector which could have resulted in a big disaster in the year 2001. The sector-neutral strategy would still faces but will be in a much better position than the one without constraints 
+Even though sector-neutral strategy might not outperform one with no constraints on sectors, this strategy will be very helpful to avoid effects due to industry bubble bursts. For example, prior to the year 2001, the Tech stocks had very high momentum up until the 2001 Dot Com bubble burst, With no constraints on the sectors, the unconstrained strategy might have been overweight in the tech sector which could have resulted in a big disaster in the year 2001. The sector-neutral strategy would still face losses but would be in a much better position than the one without constraints 
 
 
 ### Final Recommendation
