@@ -104,21 +104,69 @@ By doing a quantile strategy in every sector, we will end up with 11 long-only p
 
 ## Technical Implementation
 
-The project is executed using 3 important scripts
+The project is executed using 3 important scripts and two modules
 
+Scripts:
 1. `src/make_dataset.py`
 2. `src/make_models.py`
 3. `src/make_report.py`
 
+Modules:
+1. `src/strategies.py`
+2. `src/portfolio.py`
 
-In order to conduct our analysis, we need to convert our raw data into datasets that are suitable for modeling
 
+In order to conduct our analysis, we need to convert our raw data(`data/raw/qr_lead_hw_data_candidate.csv.gz`) into datasets that are suitable for modeling using the `src/make_dataset.py` script
+
+
+To run this script, run the following command
+
+```
+python3 src/make_dataset.py
+```
 
 The python script [make_dataset.py](../src/data/make_dataset.py) converts the raw data into the following important csv files
 
-- `monthly_returns.csv` - This file stores monthly returns of each stock with the columns as stock tickers, rows as monthly dates and values as the monthly returns corresponding to the row and column
 
-- `signal.csv` - This file stores the signal values of each stock with the columns as stock tickers, rows as monthly dates and values as the monthly returns corresponding to the row and column
+
+- `data/processed/monthly_returns.csv` - This file stores monthly returns of each stock with the columns as stock tickers, rows as monthly dates and values as the monthly returns corresponding to the row and column. The monthly returns are calculated using adjusted close prices for accurate represntation of returns adjusted for dividends, stock splits etc.
+
+- `data/processed/signal.csv` - This file stores the signal values of each stock with the columns as stock tickers, rows as monthly dates and values as the monthly returns corresponding to the row and column
+
+- `data/processed/monthly_vol.csv` - This file stores monthly annualized volatilities using past 3 years history of each stock with the columns as stock tickers, rows as monthly dates and values as the annualized vaolatility corresponding to the row and column
+
+- `data/processed/sectors.csv` - This file contains two columns, the first column represents the stock ticker and the second column reprsents the sector it belongs to
+
+- `data/processed/eqwt_benchmark_returns.csv` - This is the equal weighted benchmark monthly time series of returns
+
+- `data/processed/sector_eqwt_benchmark_returns.csv` - This is the sector adjusted equal weighted benchmark monthly time series of returns
+
+
+After these files are created, the next script that needs to be run is `src/make_models.py`. This script builds the strategies, computes the portfolio weights for every month and calculates the realized portfolio returns using the stock returns provided
+
+To run the full script, run the following commmand
+
+```
+python3 src/make_models.py
+```
+
+This script uses the `src/strategies.py` module that has class implementations of different strategies
+
+As an example, a single stock strategy can be implemented by using the following block of code
+
+```
+import pandas as pd
+from strategies import SingleStockStrategy
+
+signal_df = pd.read_csv('data/processed/signal.csv',index_col = 0,parse_dates = True)
+stock_returns = pd.read_csv('data/processed/stock_returns.csv', index_col = 0, parse_dates = True)
+
+strat = SingleStockStrategy(signal_df) # Initializes the single stock strategy with a given signal
+strat.compute_weights() # Computes the portfolio weights every month
+portfolio_weights = strat.get_weights() # Gets the results once the computing is done
+portfolio_returns = strat.compute_returns(stock_returns) # Computes the realized portfolio returns
+
+````
 
 
 
@@ -138,3 +186,11 @@ The python script [make_dataset.py](../src/data/make_dataset.py) converts the ra
 | p-values(Adj. Sharpe) |     0.00212658 |             0.00556498 |   0.0330341 |
 | p-values(IR)          |     0.321895   |             0.19004    | nan         |
 
+
+|                               |   Single Stock (risk-tol) |   Top Quantile |   Optimization |   Top Quantile (sector-neutral) |   Eq. wt. Benchmark |
+|:------------------------------|--------------------------:|---------------:|---------------:|--------------------------------:|--------------------:|
+| Single Stock (risk-tol)       |                      1    |           0.66 |           0.68 |                            0.56 |                0.49 |
+| Top Quantile                  |                      0.66 |           1    |           0.86 |                            0.9  |                0.84 |
+| Optimization                  |                      0.68 |           0.86 |           1    |                            0.79 |                0.67 |
+| Top Quantile (sector-neutral) |                      0.56 |           0.9  |           0.79 |                            1    |                0.93 |
+| Eq. wt. Benchmark             |                      0.49 |           0.84 |           0.67 |                            0.93 |                1    |
