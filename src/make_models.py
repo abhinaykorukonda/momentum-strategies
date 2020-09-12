@@ -78,7 +78,8 @@ def main():
 
     """Optimization strategy: no constraint of single stock, long only constraint"""
 
-    response = input("Do you want to run the optimization strategy as this will take a couple of minutes due to multiple optimizations? Please type Yes or No: ")
+    response = input(
+        "Do you want to run the optimization strategy as this will take a couple of minutes due to multiple optimizations? Please type Yes or No: ")
 
     if response == "Yes":
         print("Running optimization strategy with a target volatility of 15%")

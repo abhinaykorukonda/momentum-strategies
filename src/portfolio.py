@@ -39,7 +39,7 @@ class TearSheet:
             self._time_factor = 1
 
     def get_results(self):
-        """[summary]
+        """Gets the portfolio results with all the tearsheet metrics
 
         Returns
         -------
@@ -69,7 +69,7 @@ class TearSheet:
                  ('IR', lambda x: self.IR(x, benchmark, time_factor)),
                  ]
 
-        agg_func = lambda x: [func(x) for func_name, func in funcs]
+        def agg_func(x): return [func(x) for func_name, func in funcs]
 
         returns_df = pd.DataFrame(dict(self._strat_rets))
 
@@ -86,15 +86,15 @@ class TearSheet:
 
         num_months = benchmark.shape[0]
 
-        mean_p_values = self.p_value(self._results.loc['Adjusted Sharpe',:],num_months, self._time_factor)
+        mean_p_values = self.p_value(
+            self._results.loc['Adjusted Sharpe', :], num_months, self._time_factor)
 
-        self._results.loc['p-values(Adj. Sharpe)',:] = mean_p_values
+        self._results.loc['p-values(Adj. Sharpe)', :] = mean_p_values
 
-        ir_p_values = self.p_value(self._results.loc['IR',:],num_months, self._time_factor)
+        ir_p_values = self.p_value(
+            self._results.loc['IR', :], num_months, self._time_factor)
 
-        self._results.loc['p-values(IR)',:] = ir_p_values
-        
-
+        self._results.loc['p-values(IR)', :] = ir_p_values
 
     @staticmethod
     def sharpe_ratio(x, time_factor):
@@ -109,13 +109,12 @@ class TearSheet:
         Returns
         -------
         float
-            
+
         """
         return x.mean() * np.sqrt(time_factor) / x.std()
 
     @staticmethod
     def adj_sharpe_ratio(x, time_factor):
-
         """Calculates sharpe ratio adjusted for skewness and kurtosis
 
         Parameters
@@ -277,7 +276,6 @@ class TearSheet:
         -------
         float
         """
-
 
         results = linregress(x, benchmark)
         return results.slope

@@ -4,7 +4,7 @@ from os.path import join, dirname
 from collections import OrderedDict
 from portfolio import TearSheet
 import matplotlib.pyplot as plt
-
+import tabulate
 plt.style.use('seaborn-whitegrid')
 
 INPUT_PATH = join(dirname(__file__), '..', 'data', 'results')
@@ -95,7 +95,6 @@ def main():
     plt.xlabel('Date')
     plt.ylabel('Portfolio Value')
     plt.tight_layout()
-    plt.gcf().set_size_inches(15, 8)
     plt.savefig(join(OUTPUT_PATH, 'figures',
                      'cumulative_returns.png'), dpi=400)
 
@@ -110,7 +109,6 @@ def main():
     plt.xlabel('Date')
     plt.ylabel('Sharpe ratio')
     plt.tight_layout()
-    plt.gcf().set_size_inches(15, 8)
     plt.savefig(join(OUTPUT_PATH, 'figures', 'rolling_sharpe.png'), dpi=400)
     print("Saving 3 year rolling sharpe plot at reports/figures/rolling_sharpe.png")
 
@@ -119,13 +117,13 @@ def main():
     plt.title('Density plot of monthly returns')
     plt.xlabel('Monthly returns')
     plt.tight_layout()
-    plt.gcf().set_size_inches(10, 8)
     plt.savefig(join(OUTPUT_PATH, 'figures', 'density.png'), dpi=400)
     print("Saving density plot at reports/figures/rolling_sharpe.png")
 
     # printing correlations
+    print("printing Correlations")
     print(monthly_returns[subset_plot].corr().round(2).to_markdown())
-
+    print("Program complete")
 
 if __name__ == "__main__":
     main()
