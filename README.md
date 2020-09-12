@@ -47,6 +47,8 @@ Project Organization
     │   ├── make_models.py <- Scripts to train strategies and return results of the strategies
     │   │
     │   └── make_report.py <- Scripts to create exploratory and results oriented analytics and visualizations based on the results of the strategies
+    ├── report.pdf         <- A full report discussing the assignment implementation and results
+    
 
 Usage
 --------
