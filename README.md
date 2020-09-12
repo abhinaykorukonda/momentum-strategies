@@ -40,36 +40,34 @@ Project Organization
     ├── src                <- Source code for use in this project.
     │   ├── __init__.py    <- Makes src a Python module
     │   │
-    │   ├── data           <- Scripts to convert raw data to processed data for
-    │   │   └── make_dataset.py
+    │   ├── strategies.py  <- Class implementions for different strategies
     │   │
-    │   ├── models         <- Scripts to train models and then use trained models to make
-    │   │   │                 predictions
-    │   │   ├── predict_model.py
-    │   │   └── train_model.py
+    │   ├── analytics.py  <- Class implementions for analytics
     │   │
-    │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
-    │       └── visualize.py
-
+    │   ├── make_data.py   <- Scripts to convert raw data to processed data for
+    │   │
+    │   ├── make_models.py <- Scripts to train models and then use trained models to make
+    │   │
+    │   └── make_report.py <- Scripts to create exploratory and results oriented analytics and visualizations
 
 Usage
 --------
 To convert raw dataset to processed datasets, run this command
 
 ```
-python3 src/data/make_dataset.py
+python3 src/make_data.py
 ```
 
 To train and prepare strategy model results, run this command
 
 ```
-python3 src/models/make_models.py
+python3 src/make_models.py
 ```
 
 To prepare visualization figures and strategy tearsheets, run this command
 
 ```
-python3 src/visualization/visualize.py
+python3 src/make_report.py
 ```
 
 --------

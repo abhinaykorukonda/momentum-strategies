@@ -14,12 +14,12 @@ This report discusses the findings of different strategies using momentum signal
 
 
 ## Choice of momentum signal
-----------------------------
+
 
 While there are many ways to measure momentum, based on Jegadeesh 1990 and Fama-French website, the general momentum signal used is [2-12 momentum](http://mba.tuck.dartmouth.edu/pages/faculty/ken.french/Data_Library/det_mom_factor.html), (last 12-month returns, excluding the previous month) when examining intermediate-term momentum (last 12-month returns) effect on stock prices. The last month is excluded to avoid effects from [short-term return reversals](https://alphaarchitect.com/2015/01/14/quantitative-momentum-research-short-term-return-reversal/)
 
 ## Choice of benchmarks
------------------------
+
 
 ### No sector neutrality
 For the strategies without sector neutrality, the best benchmark to be used is an equal weighted index. Many institutions use market-cap weighted benchmarks such as S\&P 500 to measure their portfolio.
@@ -51,7 +51,7 @@ The following assumptions/considerations are NOT followed
 
 
 ## Strategy choices
---------------------
+
 
 ### Single stock strategy
 
@@ -89,8 +89,52 @@ Based on pg 383 of Kahn 2000, the following equation shows us how to set up the 
 
 
 
-This is a simple quadratic optimization problem with linear constraints. Every month, this optimization will be done based on the new signal values (or ex-ante alphas) 
+This is a simple quadratic optimization problem with linear constraints. Every month, this optimization will be done based on the new signal values (or ex-ante alphas) and the updated covariance matrix. 
+
+Even though an appropriate benchmark would be market weighted benchmark (see [efficient-frontier](https://en.wikipedia.org/wiki/Efficient_frontier)), we will still use equal-weighted benchmark for our analysis
+
+
+### Quantile Strategy (Sector-Neutral)
+
+With the first constraint and a new constraint on sector-neutrality (equal weights) added, we can simply modify the Quantile Strategy to conform with the new constraint
+
+Instead of sorting the stocks globally based on the signal, we can sort the stocks locally in the sector and pick the portfolio of top nth quantile in each sector. So, the quantile strategy can be implemented for every sector individually and then combined into global portfolio strategy.
+
+By doing a quantile strategy in every sector, we will end up with 11 long-only portfolios. We will then make sure to equally weigh each sector by multiplying the portfolio weights with 1/11 (1 / no. of sectors). This ensures that the weights of the sectors are equal and the total sum of the portfolio weights is equal to 1.
+
+## Technical Implementation
+
+The project is executed using 3 important scripts
+
+1. `src/make_dataset.py`
+2. `src/make_models.py`
+3. `src/make_report.py`
+
+
+In order to conduct our analysis, we need to convert our raw data into datasets that are suitable for modeling
+
+
+The python script [make_dataset.py](../src/data/make_dataset.py) converts the raw data into the following important csv files
+
+- `monthly_returns.csv` - This file stores monthly returns of each stock with the columns as stock tickers, rows as monthly dates and values as the monthly returns corresponding to the row and column
+
+- `signal.csv` - This file stores the signal values of each stock with the columns as stock tickers, rows as monthly dates and values as the monthly returns corresponding to the row and column
 
 
 
+|                       |   single_stock |   single_stock_risktol |   benchmark |
+|:----------------------|---------------:|-----------------------:|------------:|
+| Mean                  |     0.578697   |             0.228993   |   0.144446  |
+| Volatility            |     0.465486   |             0.243748   |   0.14924   |
+| Sharpe                |     1.24321    |             0.939466   |   0.967876  |
+| Skew                  |    -0.208676   |             0.538185   |  -0.708757  |
+| Kurtosis              |     0.894886   |             0.904876   |   3.94464   |
+| Adjusted Sharpe       |     1.11781    |             0.98737    |   0.708194  |
+| Drawdown (%)          |    -0.447743   |            -0.302778   |  -0.254575  |
+| Beta                  |     0.109278   |             0.300963   |   1         |
+| Alpha                 |     0.0812071  |             0.0755279  |   0         |
+| IR                    |     0.176467   |             0.335539   | nan         |
+| Turnover (%)          |     6.07229    |            11.5663     | nan         |
+| p-values(Adj. Sharpe) |     0.00212658 |             0.00556498 |   0.0330341 |
+| p-values(IR)          |     0.321895   |             0.19004    | nan         |
 
