@@ -161,10 +161,11 @@ from strategies import SingleStockStrategy
 signal_df = pd.read_csv('data/processed/signal.csv',index_col = 0,parse_dates = True)
 stock_returns = pd.read_csv('data/processed/stock_returns.csv', index_col = 0, parse_dates = True)
 
-strat = SingleStockStrategy(signal_df) # Initializes the single stock strategy with a given signal
-strat.compute_weights() # Computes the portfolio weights every month
-portfolio_weights = strat.get_weights() # Gets the results once the computing is done
-portfolio_returns = strat.compute_returns(stock_returns) # Computes the realized portfolio returns
+# Initialize a strategy and calculate portfolio weights and realized returns every month
+strat = SingleStockStrategy(signal_df) 
+strat.compute_weights()
+portfolio_weights = strat.get_weights()
+portfolio_returns = strat.compute_returns(stock_returns)
 
 ````
 
