@@ -67,14 +67,14 @@ def main():
     cov_df.columns = daily_returns.columns
 
     # Dump daily returns
-    print("Dumping daily returns file as daily_returns.csv")
-    daily_returns.loc[daily_returns.index >= CUTOFF_DATE,
-                      :].to_csv('data/processed/daily_returns.csv')
+    # print("Dumping daily returns file as daily_returns.csv")
+    # daily_returns.loc[daily_returns.index >= CUTOFF_DATE,
+    #                   :].to_csv('data/processed/daily_returns.csv')
 
     print("Dumping covariance matrices as monthly_covariances.csv")
     cov_df.to_csv('data/processed/monthly_covariances.csv')
 
-    print("Dumping month end returns as monthly_covariances.csv")
+    print("Dumping month end returns as monthly_returns.csv")
     monthend_returns.loc[monthend_returns.index >= CUTOFF_DATE, :].to_csv(
         'data/processed/monthly_returns.csv')
 
@@ -103,15 +103,15 @@ def main():
         volumes_df * monthend_returns).sum(axis=1).divide(volumes_df.sum(axis=1))
 
     # Compute benchmark valatilities
-    mcap_benchmark_vol = (mcap_benchmark_returns.rolling(
-        36).std() * np.sqrt(12)).dropna()
+    # mcap_benchmark_vol = (mcap_benchmark_returns.rolling(
+    #     36).std() * np.sqrt(12)).dropna()
 
-    print("Dumping market-cap benchmark monthly returns and volatilities \
-        as mcap_benchmark_returns.csv and mcap_benchmark_vol.csv")
-    mcap_benchmark_returns.loc[mcap_benchmark_returns.index >= CUTOFF_DATE].to_csv(
-        'data/processed/mcap_benchmark_returns.csv')
-    mcap_benchmark_vol.loc[mcap_benchmark_vol.index >= CUTOFF_DATE].to_csv(
-        'data/processed/mcap_benchmark_vol.csv')
+    # print("Dumping market-cap benchmark monthly returns and volatilities \
+    #     as mcap_benchmark_returns.csv and mcap_benchmark_vol.csv")
+    # mcap_benchmark_returns.loc[mcap_benchmark_returns.index >= CUTOFF_DATE].to_csv(
+    #     'data/processed/mcap_benchmark_returns.csv')
+    # mcap_benchmark_vol.loc[mcap_benchmark_vol.index >= CUTOFF_DATE].to_csv(
+    #     'data/processed/mcap_benchmark_vol.csv')
 
     # Equal weighted benchmark
     eqwt_benchmark_returns = monthend_returns.mean(axis=1)

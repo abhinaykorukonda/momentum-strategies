@@ -7,9 +7,7 @@ import matplotlib.pyplot as plt
 
 plt.style.use('seaborn-whitegrid')
 
-
 INPUT_PATH = join(dirname(__file__), '..', 'data', 'results')
-
 OUTPUT_PATH = join(dirname(__file__), '..', 'reports')
 
 
@@ -39,9 +37,11 @@ def main():
 
     # Load the benchmarks
     benchmark_returns = pd.read_csv(join(
-        INPUT_PATH, '..', 'processed', 'eqwt_benchmark_returns.csv'), index_col=0, parse_dates=True, squeeze=True)
+        INPUT_PATH, '..', 'processed', 'eqwt_benchmark_returns.csv'),
+         index_col=0, parse_dates=True, squeeze=True)
     sector_benchmark_returns = pd.read_csv(
-        join(INPUT_PATH, '..', 'processed', 'sector_eqwt_benchmark_returns.csv'), index_col=0, parse_dates=True, squeeze=True)
+        join(INPUT_PATH, '..', 'processed', 'sector_eqwt_benchmark_returns.csv'),
+         index_col=0, parse_dates=True, squeeze=True)
 
     # Prepare tearsheet for first group
     tearsheet_one = TearSheet(dict(returns_df_lst[0:4]),
@@ -123,11 +123,8 @@ def main():
     plt.savefig(join(OUTPUT_PATH, 'figures', 'density.png'), dpi=400)
     print("Saving density plot at reports/figures/rolling_sharpe.png")
 
-
-    # Plotting correlations
-
+    # printing correlations
     print(monthly_returns[subset_plot].corr().round(2).to_markdown())
-
 
 
 if __name__ == "__main__":

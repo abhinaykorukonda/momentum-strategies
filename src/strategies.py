@@ -5,6 +5,8 @@ from scipy.optimize import minimize
 
 
 class BaseStrategy:
+    """Base Strategy class that can initialize, get weights and other details and calculate returns
+    """
 
     def __init__(self, stock_signals):
         """Initializes the base strategy class
@@ -86,6 +88,13 @@ class BaseStrategy:
 
 
 class SingleStockStrategy(BaseStrategy):
+    """A strategy class for implementing single stock trading strategy
+
+    Parameters
+    ----------
+    BaseStrategy : BaseStrategy
+        parent class for this strategy
+    """
 
     def __init__(self, stock_signals, stock_vols=None, risk_constraint=False, vol_tolerance=0.25):
         """Implements a single stock strategy that will trade only stock at any time
@@ -111,6 +120,14 @@ class SingleStockStrategy(BaseStrategy):
         self._stock_vols = stock_vols
 
     def compute_weights(self):
+        """Compute sportfolio weights given the signal
+
+        Returns
+        -------
+        pd.DataFrame
+            Returns a DataFrame with dates as rows, tickers as columns, and 
+            values as the portfolio weights for the given 
+        """
 
         if self._risk_constraint:
             self._weights = self._compute_risk_tol_weights(self._vol_tolerance)
@@ -155,8 +172,32 @@ class SingleStockStrategy(BaseStrategy):
 
 
 class QuantileStrategy(BaseStrategy):
+    """A strategy class for implementing top nth quantile of stocks based on signal
 
-    def __init__(self, stock_signals, quantiles, short_constraint=True, sector_neutral=False, sector_groupings=None):
+    Parameters
+    ----------
+    BaseStrategy : BaseStrategy
+        parent class for this strategy 
+    """
+
+    def __init__(self, stock_signals : pd.DataFrame, quantiles : int, short_constraint=True, sector_neutral=False, sector_groupings=None):
+        """[summary]
+
+        Parameters
+        ----------
+        stock_signals : pandas.DataFrame
+            Dataframe with columns as stock tickers, index as dates 
+            and values as forecasted signals for the given time period
+        quantiles : int
+            Number of quantiles considered for the strategy
+        short_constraint : bool, optional
+            where there is a constraint on shorting, by default True
+        sector_neutral : bool, optional
+            whether the strategy is sector-neutral or not, by default False
+        sector_groupings : list[list[str]], optional
+            list of sub-lists where each sub-list contains the tickers that belong to the same sector
+            , by default None
+        """
         assert type(quantiles) == int
         super().__init__(stock_signals)
         self._quantiles = quantiles
@@ -166,6 +207,14 @@ class QuantileStrategy(BaseStrategy):
         self._sector_groupings = sector_groupings
 
     def compute_weights(self):
+        """Compute sportfolio weights given the signal
+
+        Returns
+        -------
+        pd.DataFrame
+            Returns a DataFrame with dates as rows, tickers as columns, and 
+            values as the portfolio weights for the given 
+        """
 
         if self._short_constraint:
             if self._sector_neutral:
@@ -212,8 +261,32 @@ class QuantileStrategy(BaseStrategy):
 
 
 class OptimizationStrategy(BaseStrategy):
+    """A strategy class for implementing mean variance optimization strategy based on signal
 
-    def __init__(self, stock_signals, covariances, vol_tolerance, short_constraint):
+    Parameters
+    ----------
+    BaseStrategy : BaseStrategy
+        parent class for this strategy 
+    """
+
+
+    def __init__(self, stock_signals, covariances, vol_tolerance, short_constraint = True):
+        """Initilizes an optimization strategy
+
+        Parameters
+        ----------
+        stock_signals : pandas.DataFrame
+            Dataframe with columns as stock tickers, index as dates 
+            and values as forecasted signals for the given time period
+        covariances : pandas.DataFrame
+            A multi-index dataframe with the first index level as dates, second index
+            level as stock tickers, columns as stock tickers, and values as the 
+            covariances between the stock tickers for a given date
+        vol_tolerance : [int.float]
+            Target volatility for the strategy
+        short_constraint : bool, by default True
+            whether there is a short constraint
+        """
 
         super().__init__(stock_signals)
         self._covariances = covariances
@@ -223,6 +296,15 @@ class OptimizationStrategy(BaseStrategy):
         self._variance_tol = self._vol_tol ** 2
 
     def compute_weights(self):
+        """Compute sportfolio weights given the signal
+
+        Returns
+        -------
+        pd.DataFrame
+            Returns a DataFrame with dates as rows, tickers as columns, and 
+            values as the portfolio weights for the given 
+        """
+
 
         monthend_dates = self._signal_df.index.values
 
