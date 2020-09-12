@@ -1,5 +1,15 @@
 # Assignment Report
 
+
+1. [Choice of momentum signal](#choice-of-momentum-signal)
+2. [Choice of benchmarks](#choice-of-benchmarks)
+    1. [No Sector Neutrality](#no-sector-neutrality)
+    2. [Sector Neutrality](#sector-neutrality)
+3. [Backtest Assumptions](#backtest-assumptions)
+4. [Strategy Choices](#strategy-choices)
+5. [Technical Implementation](#technical-implementation)
+
+
 This report discusses the findings of different strategies using momentum signal. The daily stock prices of nearly 110 stocks for the past 10 years is given for our exercise. The report discusses the following strategies
 
 - Single stock strategy
@@ -166,8 +176,7 @@ strat = SingleStockStrategy(signal_df)
 strat.compute_weights()
 portfolio_weights = strat.get_weights()
 portfolio_returns = strat.compute_returns(stock_returns)
-
-````
+```
 
 
 
