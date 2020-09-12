@@ -29,8 +29,6 @@ Project Organization
     │   ├── processed      <- The final, canonical data sets for modeling.
     │   └── raw            <- The original, immutable data dump.
     │
-    ├── notebooks          <- Jupyter notebooks
-    │
     ├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
     │   ├── report.md      <- The markdown report describing the strategy results
     │   └── figures        <- Generated graphics and figures to be used in reporting
@@ -42,32 +40,39 @@ Project Organization
     │   │
     │   ├── strategies.py  <- Class implementions for different strategies
     │   │
-    │   ├── analytics.py  <- Class implementions for analytics
+    │   ├── portfolio.py   <- Class implementions for tearsheet for a strategy
     │   │
-    │   ├── make_data.py   <- Scripts to convert raw data to processed data for
+    │   ├── make_data.py   <- Scripts to convert raw data to processed data for models
     │   │
-    │   ├── make_models.py <- Scripts to train models and then use trained models to make
+    │   ├── make_models.py <- Scripts to train strategies and return results of the strategies
     │   │
-    │   └── make_report.py <- Scripts to create exploratory and results oriented analytics and visualizations
+    │   └── make_report.py <- Scripts to create exploratory and results oriented analytics and visualizations based on the results of the strategies
 
 Usage
 --------
-To convert raw dataset to processed datasets, run this command
+
+Install the requirements
 
 ```
-python3 src/make_data.py
+pip install -r requirements.txt
+```
+
+To convert the given raw dataset to processed datasets, run this command
+
+```
+py src/make_data.py
 ```
 
 To train and prepare strategy model results, run this command
 
 ```
-python3 src/make_models.py
+py src/make_models.py
 ```
 
 To prepare visualization figures and strategy tearsheets, run this command
 
 ```
-python3 src/make_report.py
+py src/make_report.py
 ```
 
 --------
